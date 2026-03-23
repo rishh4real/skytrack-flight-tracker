@@ -61,14 +61,7 @@ API Features Used:
 * Fetch API
 * AviationStack Public API
 
----
 
-## ▶️ How to Run the Project
-
-1. Clone the repository
-2. Open the project folder in VS Code
-3. Open `index.html` using Live Server or any browser
-4. Ensure internet connection for API data fetching
 
 ---
 
