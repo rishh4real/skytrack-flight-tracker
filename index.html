@@ -1,27 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SkyTrack</title>
-
-<link rel="stylesheet" href="style.css">
-<script src="script.js" defer></script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkyTrack | Premium Flight Tracker</title>
+  <meta name="description" content="Track flights in real-time with SkyTrack.">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  >
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="script.js" defer></script>
 </head>
-
 <body>
 
-<header>
-<h1>SkyTrack ✈️</h1>
-</header>
+  <!-- Decorative Background Elements -->
+  <div class="bg-shape shape-1"></div>
+  <div class="bg-shape shape-2"></div>
 
-<section>
-<input type="text" id="search" placeholder="Search for a flight...">
-<button id="searchBtn">Search</button>
-</section>
+  <header class="glass-header">
+    <div class="header-container">
+      <h1><span class="icon">✈️</span> SkyTrack</h1>
+      <p>Live Global Flight Radar</p>
+    </div>
+  </header>
 
-<section id="flightsContainer"></section>
+  <main class="container">
+    <section class="search-section">
+      <div class="search-box glass-panel">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="search" placeholder="Search by airline, or airport...">
+        <button id="searchBtn">Track Flight</button>
+        <select id="regionFilter" aria-label="Region filter">
+          <option value="all">All Regions</option>
+          <option value="north-america">North America</option>
+          <option value="europe">Europe</option>
+          <option value="asia">Asia</option>
+        </select>
+      </div>
+      <p id="lastUpdated" class="last-updated">Loading live sky data...</p>
+    </section>
+
+    <!-- Error container -->
+    <div id="errorContainer" class="error-msg" style="display: none;"></div>
+    
+    <!-- Loader -->
+    <div id="loader" class="loader-container">
+      <div class="spinner"></div>
+      <p>Fetching airspace data...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <div class="empty-icon">🤷‍♂️</div>
+      <p>No flights found matching your search.</p>
+    </div>
+
+    <section class="map-section glass-panel">
+      <div id="flightMap" aria-label="Live airplane map"></div>
+    </section>
+
+    <section id="flightsContainer" class="flights-grid"></section>
+  </main>
 
 </body>
 </html>
