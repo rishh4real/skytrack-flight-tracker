@@ -1,5 +1,6 @@
 :root {
   --bg-primary: #0a0e17;
+  --bg-elevated: #101827;
   --text-primary: #f0f4f8;
   --text-secondary: #94a3b8;
   --primary-accent: #3A86FF;
@@ -10,6 +11,15 @@
   --status-scheduled: #f59e0b;
   --status-cancelled: #ef4444;
   --status-landed: #3b82f6;
+}
+
+body.light-theme {
+  --bg-primary: #ecf3ff;
+  --bg-elevated: #ffffff;
+  --text-primary: #16263e;
+  --text-secondary: #4e627e;
+  --glass-bg: rgba(255, 255, 255, 0.82);
+  --glass-border: rgba(15, 35, 66, 0.12);
 }
 
 * {
@@ -231,6 +241,7 @@ select {
   gap: 16px;
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   animation: fadeIn 0.5s ease backwards;
+  background: var(--bg-elevated);
 }
 
 .flight-card:hover {
@@ -341,6 +352,46 @@ select {
 .status-cancelled { background: rgba(239, 68, 68, 0.15); color: var(--status-cancelled); }
 .status-landed { background: rgba(59, 130, 246, 0.15); color: var(--status-landed); }
 .status-unknown { background: rgba(148, 163, 184, 0.15); color: var(--text-secondary); }
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.card-btn {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  font-size: 0.83rem;
+  cursor: pointer;
+}
+
+.card-btn:hover {
+  box-shadow: none;
+  transform: none;
+  background: rgba(58, 134, 255, 0.2);
+}
+
+.card-btn.is-active {
+  border-color: rgba(245, 158, 11, 0.9);
+  color: #f59e0b;
+}
+
+.flight-extra {
+  margin-top: 8px;
+  border-top: 1px dashed var(--glass-border);
+  padding-top: 10px;
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
+.flight-extra.hidden {
+  display: none;
+}
 
 /* Loader */
 .loader-container {

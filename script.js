@@ -1,7 +1,9 @@
 const API_KEY = "555072cb2483e06f4f6fca89c0a9b0e8";
 const REFRESH_INTERVAL_MS = 60000;
 let allFlights = [];
-let filteredFlights = [];
+let visibleFlights = [];
+let favoriteFlights = new Set(JSON.parse(localStorage.getItem("skytrack-favorites") || "[]"));
+let expandedFlights = new Set();
 
 const container = document.getElementById("flightsContainer");
 const loader = document.getElementById("loader");
@@ -10,6 +12,8 @@ const errorContainer = document.getElementById("errorContainer");
 const searchInput = document.getElementById("search");
 const searchBtn = document.getElementById("searchBtn");
 const regionFilter = document.getElementById("regionFilter");
+const sortBy = document.getElementById("sortBy");
+const themeToggle = document.getElementById("themeToggle");
 const lastUpdated = document.getElementById("lastUpdated");
 let map;
 let markerLayer;
@@ -24,6 +28,10 @@ function init() {
     if (e.key === "Enter") handleSearch();
   });
   regionFilter.addEventListener("change", handleSearch);
+  sortBy.addEventListener("change", handleSearch);
+  themeToggle.addEventListener("click", toggleTheme);
+  container.addEventListener("click", handleCardActions);
+  applySavedTheme();
 }
 
 function initMap() {
@@ -67,6 +75,7 @@ function displayFlights(flights) {
   renderMap(flights);
 
   flights.slice(0, 12).forEach((flight) => {
+    const flightId = getFlightId(flight);
     const card = document.createElement("div");
     card.classList.add("flight-card", "glass-panel");
 
@@ -88,6 +97,13 @@ function displayFlights(flights) {
     if (status === "scheduled") statusClass = "status-scheduled";
     if (status === "cancelled") statusClass = "status-cancelled";
     if (status === "landed") statusClass = "status-landed";
+
+    const isFavorite = favoriteFlights.has(flightId);
+    const isExpanded = expandedFlights.has(flightId);
+    const departureTime = flight.departure?.scheduled || "N/A";
+    const arrivalTime = flight.arrival?.scheduled || "N/A";
+    const terminal = flight.departure?.terminal || "N/A";
+    const gate = flight.departure?.gate || "N/A";
 
     card.innerHTML = `
       <div class="card-header">
@@ -116,6 +132,19 @@ function displayFlights(flights) {
       </div>
       
       <span class="status-badge ${statusClass}">${status}</span>
+      <div class="card-actions">
+        <button class="card-btn ${isFavorite ? "is-active" : ""}" data-action="favorite" data-id="${flightId}">
+          ${isFavorite ? "★ Favorited" : "☆ Favorite"}
+        </button>
+        <button class="card-btn" data-action="toggle-details" data-id="${flightId}">
+          ${isExpanded ? "Hide Details" : "View More"}
+        </button>
+      </div>
+      <div class="flight-extra ${isExpanded ? "" : "hidden"}">
+        <p>Departure Time: ${departureTime}</p>
+        <p>Arrival Time: ${arrivalTime}</p>
+        <p>Terminal/Gate: ${terminal} / ${gate}</p>
+      </div>
     `;
 
     container.appendChild(card);
@@ -125,8 +154,9 @@ function displayFlights(flights) {
 function handleSearch() {
   const searchValue = searchInput.value.toLowerCase().trim();
   const selectedRegion = regionFilter.value;
-  
-  filteredFlights = allFlights.filter(flight => {
+  const sortedBy = sortBy.value;
+
+  visibleFlights = allFlights.filter(flight => {
     const matchesSearch =
       !searchValue ||
       (flight.airline?.name && flight.airline.name.toLowerCase().includes(searchValue)) ||
@@ -140,7 +170,8 @@ function handleSearch() {
     return matchesSearch && matchesRegion;
   });
 
-  displayFlights(filteredFlights);
+  const sortedFlights = [...visibleFlights].sort((a, b) => compareFlights(a, b, sortedBy));
+  displayFlights(sortedFlights);
 }
 
 function showLoader() {
@@ -214,6 +245,64 @@ function renderMap(flights) {
     map.fitBounds(points, { padding: [20, 20], maxZoom: 6 });
   } else {
     map.setView([22, 15], 2);
+  }
+}
+
+function compareFlights(first, second, sortedBy) {
+  const firstAirline = (first.airline?.name || "").toLowerCase();
+  const secondAirline = (second.airline?.name || "").toLowerCase();
+  const firstStatus = (first.flight_status || "").toLowerCase();
+  const secondStatus = (second.flight_status || "").toLowerCase();
+
+  if (sortedBy === "airline-desc") return secondAirline.localeCompare(firstAirline);
+  if (sortedBy === "status-asc") return firstStatus.localeCompare(secondStatus);
+  if (sortedBy === "status-desc") return secondStatus.localeCompare(firstStatus);
+  return firstAirline.localeCompare(secondAirline);
+}
+
+function getFlightId(flight) {
+  return [
+    flight.flight?.iata || flight.flight?.icao || "na",
+    flight.departure?.iata || "na",
+    flight.arrival?.iata || "na"
+  ].join("-");
+}
+
+function handleCardActions(event) {
+  const target = event.target.closest("button[data-action]");
+  if (!target) return;
+
+  const action = target.dataset.action;
+  const id = target.dataset.id;
+  if (!id) return;
+
+  if (action === "favorite") {
+    favoriteFlights = favoriteFlights.has(id)
+      ? new Set([...favoriteFlights].filter((flightId) => flightId !== id))
+      : new Set([...favoriteFlights, id]);
+    localStorage.setItem("skytrack-favorites", JSON.stringify([...favoriteFlights]));
+    handleSearch();
+    return;
+  }
+
+  if (action === "toggle-details") {
+    expandedFlights = expandedFlights.has(id)
+      ? new Set([...expandedFlights].filter((flightId) => flightId !== id))
+      : new Set([...expandedFlights, id]);
+    handleSearch();
+  }
+}
+
+function toggleTheme() {
+  document.body.classList.toggle("light-theme");
+  const isLight = document.body.classList.contains("light-theme");
+  localStorage.setItem("skytrack-theme", isLight ? "light" : "dark");
+}
+
+function applySavedTheme() {
+  const savedTheme = localStorage.getItem("skytrack-theme");
+  if (savedTheme === "light") {
+    document.body.classList.add("light-theme");
   }
 }
 
